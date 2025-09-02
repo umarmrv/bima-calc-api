@@ -15,8 +15,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework", "drf_spectacular",
-    "core",
+    "bima",
 ]
+
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -29,7 +30,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "bima.urls"
+ROOT_URLCONF = "base.urls"
 TEMPLATES = [{
     "BACKEND": "django.template.backends.django.DjangoTemplates",
     "DIRS": [], "APP_DIRS": True,
@@ -40,8 +41,8 @@ TEMPLATES = [{
         "django.contrib.messages.context_processors.messages",
     ]},
 }]
-WSGI_APPLICATION = "bima.wsgi.application"
-ASGI_APPLICATION = "bima.asgi.application"
+WSGI_APPLICATION = "base.wsgi.application"
+ASGI_APPLICATION = "base.asgi.application"
 
 # === DB (sqlite по умолчанию, Postgres по DB_URL) ===
 DB_URL = os.getenv("DB_URL", f"sqlite:///{BASE_DIR/'db.sqlite3'}")
