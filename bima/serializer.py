@@ -96,6 +96,7 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
 
 
 class ApplicationDetailSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()
     class Meta:
         model = Application
         read_only_fields = fields = (
