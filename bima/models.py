@@ -1,8 +1,6 @@
 import uuid
-from datetime import timedelta
 from django.conf import settings
 from django.db import models
-from django.utils import timezone
 
 
 class Tariff(models.TextChoices):
@@ -24,7 +22,11 @@ class Quote(models.Model):
         EXPIRED = "EXPIRED"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="quotes")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="quotes",
+    )
 
     tariff = models.CharField(max_length=20, choices=Tariff.choices)
     driver_age = models.PositiveSmallIntegerField()
@@ -40,8 +42,21 @@ class Quote(models.Model):
     ruleset_version = models.CharField(max_length=16, default="v1")
 
     valid_until = models.DateTimeField()
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.ACTIVE,
+        db_index=True,  # индекс для фильтрации по статусу
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            # индекс для выборки котировок пользователя и сортировки по дате
+            models.Index(fields=["user", "-created_at"], name="quote_user_created_idx"),
+            # индекс для поиска по сроку действия
+            models.Index(fields=["valid_until"], name="quote_valid_until_idx"),
+        ]
 
     def __str__(self):
         return f"{self.id} {self.tariff} {self.total_amount} {self.currency}"
@@ -57,8 +72,16 @@ class Application(models.Model):
         EXPIRED = "EXPIRED"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="applications")
-    quote = models.OneToOneField(Quote, on_delete=models.PROTECT, related_name="application")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="applications",
+    )
+    quote = models.OneToOneField(
+        Quote,
+        on_delete=models.PROTECT,
+        related_name="application",
+    )
 
     full_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=32)
@@ -66,10 +89,21 @@ class Application(models.Model):
     tariff = models.CharField(max_length=20, choices=Tariff.choices)
     total_amount_snapshot = models.DecimalField(max_digits=12, decimal_places=2)
 
-    status = models.CharField(max_length=12, choices=Status.choices, default=Status.NEW)
+    status = models.CharField(
+        max_length=12,
+        choices=Status.choices,
+        default=Status.NEW,
+        db_index=True,  # индекс для фильтрации по статусу
+    )
     meta = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            # индекс для выборки заявок пользователя и сортировки по дате
+            models.Index(fields=["user", "-created_at"], name="app_user_created_idx"),
+        ]
 
     def __str__(self):
         return f"{self.id} {self.tariff} {self.total_amount_snapshot} {self.status}"
