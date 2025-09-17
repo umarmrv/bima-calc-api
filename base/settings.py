@@ -118,7 +118,8 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    # ❌ Убрал несуществующий core.errors.exception_handler_json
+    "EXCEPTION_HANDLER": "bima.errors.exception_handler_json",
+    
     "DEFAULT_THROTTLE_RATES": {
         "anon": "30/min",
         "user": "120/min",
